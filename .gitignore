@@ -1,0 +1,26 @@
+x OS X
+.DS_Store
+
+# Xcode
+build/
+
+*.dSYM
+*.out
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspective
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+
+
+# svn
+.svn/
+
+# Backup files
+*~.nib
+
+# git files
+*.swp
