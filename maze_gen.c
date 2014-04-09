@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -30,13 +31,24 @@ void init_maze(Node (*maze)[MAZE_COL]){
 	int row,col;
 	for(row=0; row<MAZE_ROW; row++){
 		for(col=0; col<MAZE_COL; col++){
-			Node node = maze[row][col];
-			node.point.x = row;
-			node.point.y = col;
-			node.di = Di_None;
-			node.visited = FALSE;
+			Node *node = &maze[row][col];
+			node->point.x = col;
+			node->point.y = row;
+			node->di = Di_None;
+			node->visited = FALSE;
 		}
 	}
+}
+
+void print_maze(Node (*maze)[MAZE_COL]){
+	int row, col;
+	for(row=0; row<MAZE_ROW; row++){
+		for(col=0; col<MAZE_COL; col++){
+			printf("%d ", maze[row][col].visited);
+		}
+		printf("\n");
+	}
+    printf("\n");
 }
 
 bool has_unvisited_node(Node (*maze)[MAZE_COL]){
@@ -83,7 +95,7 @@ bool has_unvisited_neighbour(Node (*maze)[MAZE_COL], Node *p, SqList *L){
 				break;
 		}
 
-		if(is_inbounds(cur) && maze[cur.x][cur.y].visited==FALSE){
+		if(is_inbounds(cur) && maze[cur.y][cur.x].visited==FALSE){
 			Node n;
 			n.point = cur;
 			n.di = di;
@@ -96,31 +108,65 @@ bool has_unvisited_neighbour(Node (*maze)[MAZE_COL], Node *p, SqList *L){
 	return has_neighbour;
 }
 
+void random_neighbour(SqList *L, Node *pn){
+	unsigned len = L->length;
+	srand((unsigned) time(NULL));
+	int randnum = rand() % len;
+
+	elem_at_index(L, randnum, pn);
+}
+
+void remove_wall(Node (*maze)[MAZE_COL], Node *cur, Node *next){
+	int x_offset = next->point.x - cur->point.x;
+	int y_offset = next->point.y - next->point.y;
+
+	Direct di = Di_None;
+	if (x_offset == 1){
+		di = Di_East;
+	}else if (x_offset == -1){
+		di = Di_West;
+	}
+
+	if(y_offset == 1){
+		di = Di_North;
+	}else if (y_offset == -1){
+		di = Di_Sorth;
+	}
+
+	Point curp = cur->point;
+	maze[curp.y][curp.x].di = di;
+}
+
 void depth_first_gen(Node (*maze)[MAZE_COL]){
 	Node *cur;
 	SqStack s;
 	init_stack(&s, sizeof(Node *));
 
 	cur = maze[0];
-	cur->visited = TRUE;
 	while(has_unvisited_node(maze)){
 		SqList neighbours;
 		init_linerseq(&neighbours, sizeof(Node));
 
-		if(has_unvisited_neighbour(maze, cur, &neighbours)){
-			unsigned len = neighbours.length;
-			unsigned rand_num = srand(time(NULL))%len;
-			Node nodep;
-			elem_at_index(&neighbours, &nodep);
+		if(has_unvisited_neighbour(maze, cur, &neighbours)){	
+			Node nei_node;
+			random_neighbour(&neighbours, &nei_node);
 
+			cur->visited = TRUE;
 			push(&s, cur);
 
-		}else if(!empty_stack(&s)){
+			cur = &maze[nei_node.point.y][nei_node.point.x];
+            cur->visited = TRUE;
+            
+			print_maze(maze);
 
+			sleep(1);
+
+		}else if(!stack_empty(&s)){
+			pop(&s, cur);
 
 		}else{
 			//pick a node as cur, and mark as visited
-
+			break;
 		}
 
 		destory_linerseq(&neighbours);
@@ -134,6 +180,8 @@ int main(void){
 
 	init_maze(maze);
 
+	print_maze(maze);
+	
 	depth_first_gen(maze);
 
 	return 0;
