@@ -24,8 +24,8 @@ typedef struct {
 	bool visited;
 }Node;
 
-#define MAZE_ROW 8
-#define MAZE_COL 8
+#define MAZE_ROW 14	
+#define MAZE_COL 14
 
 void init_maze(Node (*maze)[MAZE_COL]){
 	int row,col;
@@ -179,8 +179,6 @@ int main(void){
 	Node maze[MAZE_ROW][MAZE_COL];
 
 	init_maze(maze);
-
-	print_maze(maze);
 	
 	depth_first_gen(maze);
 
