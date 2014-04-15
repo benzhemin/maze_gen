@@ -1,5 +1,7 @@
 #include <curses.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 #include "predef.h"
 #include "display.h"
 #include "maze_gen.h"
@@ -70,17 +72,48 @@ void print_maze_map(Node **maze, int MAZE_ROW, int MAZE_COL){
 	int row, col;
 	int maze_rows = MAZE_ROW*2;
 	int maze_cols = MAZE_COL*2;
-	int *maze_map = (int *)malloc(sizeof(int) * maze_rows * maze_cols);
+	int maze_size = maze_rows * maze_cols;
+	int *maze_map = (int *)malloc(sizeof(int) * maze_size);
 	memset(maze_map, 0, sizeof(int) * maze_rows * maze_cols);
 
 	for(row=0; row<MAZE_ROW; row++){
 		for(col=0; col<MAZE_COL; col++){
 			Node *node = (Node *)maze + row*MAZE_COL + col;
 			if(node->visited == TRUE){
-				maze_map
+				*(maze_map + row*maze_cols + col*2) = 1;
+			}
+
+			switch(node->di){
+				case Di_None:
+					break;
+				case Di_East:
+					*(maze_map + row*maze_cols + col*2+1) = 1;
+					break;
+				case Di_Sorth:
+					if (((row+1)*maze_cols + col*2) < maze_size){
+						*(maze_map + (row+1)*maze_cols + col*2) = 1;	
+					}
+					break;
+				case Di_North:
+					if((row-1) >= 0){
+						*(maze_map + (row-1)*maze_cols + col*2) = 1;		
+					}
+					break;
+				case Di_West:
+					*(maze_map + row*maze_cols + col*2-1) = 1;
+					break;
+				default:
+					assert(FALSE);
 			}
 		}
 	}
+
+	for(row=0; row<maze_rows; row++){
+		for(col=0; col<maze_cols; col++){
+			mvwprintw(maze_map_wptr, row, col*2, "%d ", *(maze_map+row*MAZE_COL+col));
+		}
+	}
+	wrefresh(maze_map_wptr);
 }
 
 void print_maze(Node **maze, int MAZE_ROW, int MAZE_COL){
