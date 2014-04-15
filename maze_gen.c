@@ -2,30 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "maze_gen.h"
 #include "stack.h"
 #include "linerseq.h"
+#include "display.h"
 
-typedef struct{
-	int x;
-	int y;
-}Point;
-
-typedef enum{
-	Di_None = 0,
-	Di_East,
-	Di_Sorth,
-	Di_North,
-	Di_West,
-}Direct;
-
-typedef struct {
-	Point point;
-	Direct di;
-	bool visited;
-}Node;
-
-#define MAZE_ROW 14	
-#define MAZE_COL 14
+#define MAZE_ROW 10	
+#define MAZE_COL 10
 
 void init_maze(Node (*maze)[MAZE_COL]){
 	int row,col;
@@ -38,17 +21,6 @@ void init_maze(Node (*maze)[MAZE_COL]){
 			node->visited = FALSE;
 		}
 	}
-}
-
-void print_maze(Node (*maze)[MAZE_COL]){
-	int row, col;
-	for(row=0; row<MAZE_ROW; row++){
-		for(col=0; col<MAZE_COL; col++){
-			printf("%d ", maze[row][col].visited);
-		}
-		printf("\n");
-	}
-    printf("\n");
 }
 
 bool has_unvisited_node(Node (*maze)[MAZE_COL]){
@@ -157,7 +129,7 @@ void depth_first_gen(Node (*maze)[MAZE_COL]){
 			cur = &maze[nei_node.point.y][nei_node.point.x];
             cur->visited = TRUE;
             
-			print_maze(maze);
+			print_maze((Node **)maze, MAZE_ROW, MAZE_COL);
 
 			sleep(1);
 
@@ -178,9 +150,13 @@ void depth_first_gen(Node (*maze)[MAZE_COL]){
 int main(void){
 	Node maze[MAZE_ROW][MAZE_COL];
 
+	init_screen(MAZE_ROW, MAZE_COL);
+
 	init_maze(maze);
 	
 	depth_first_gen(maze);
+
+	destory_screen();
 
 	return 0;
 }
