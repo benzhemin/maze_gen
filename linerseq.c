@@ -77,4 +77,3 @@ void print_linerseq(SqList *sq, void visit(void *elem)){
 	}
 	printf("\n");
 }
-

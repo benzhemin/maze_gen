@@ -74,33 +74,33 @@ void print_maze_map(Node **maze, int MAZE_ROW, int MAZE_COL){
 	int maze_cols = MAZE_COL*2;
 	int maze_size = maze_rows * maze_cols;
 	int *maze_map = (int *)malloc(sizeof(int) * maze_size);
-	memset(maze_map, 0, sizeof(int) * maze_rows * maze_cols);
+	memset(maze_map, 0, sizeof(int) * maze_size);
 
 	for(row=0; row<MAZE_ROW; row++){
 		for(col=0; col<MAZE_COL; col++){
 			Node *node = (Node *)maze + row*MAZE_COL + col;
 			if(node->visited == TRUE){
-				*(maze_map + row*maze_cols + col*2) = 1;
+				*(maze_map + (row*2)*maze_cols + col*2) = 1;
 			}
 
 			switch(node->di){
 				case Di_None:
 					break;
 				case Di_East:
-					*(maze_map + row*maze_cols + col*2+1) = 1;
+					*(maze_map + (row*2)*maze_cols + col*2+1) = 1;
 					break;
 				case Di_Sorth:
-					if (((row+1)*maze_cols + col*2) < maze_size){
+					if (((row*2+1)*maze_cols + col*2) < maze_size){
 						*(maze_map + (row+1)*maze_cols + col*2) = 1;	
 					}
 					break;
 				case Di_North:
-					if((row-1) >= 0){
-						*(maze_map + (row-1)*maze_cols + col*2) = 1;		
+					if((row*2-1) >= 0){
+						*(maze_map + (row*2-1)*maze_cols + col*2) = 1;		
 					}
 					break;
 				case Di_West:
-					*(maze_map + row*maze_cols + col*2-1) = 1;
+					*(maze_map + (row*2)*maze_cols + col*2-1) = 1;
 					break;
 				default:
 					assert(FALSE);
