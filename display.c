@@ -60,14 +60,14 @@ void print_maze_gen(Node **maze, int MAZE_ROW, int MAZE_COL){
 	int row, col;
 	for(row=0; row<MAZE_ROW; row++){
 		for(col=0; col<MAZE_COL; col++){
-			mvwprintw(maze_gen_wptr, row, col*2, "%d ", maze[row][col].visited);
+			mvwprintw(maze_gen_wptr, row, col*2, "%d ", (*((Node *)maze + row*MAZE_COL + col)).visited);
 		}
 	}
 	wrefresh(maze_gen_wptr);
 }
 
 void print_maze_map(Node **maze, int MAZE_ROW, int MAZE_COL){
-
+	
 }
 
 void print_maze(Node **maze, int MAZE_ROW, int MAZE_COL){
