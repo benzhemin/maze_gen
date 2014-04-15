@@ -67,7 +67,20 @@ void print_maze_gen(Node **maze, int MAZE_ROW, int MAZE_COL){
 }
 
 void print_maze_map(Node **maze, int MAZE_ROW, int MAZE_COL){
-	
+	int row, col;
+	int maze_rows = MAZE_ROW*2;
+	int maze_cols = MAZE_COL*2;
+	int *maze_map = (int *)malloc(sizeof(int) * maze_rows * maze_cols);
+	memset(maze_map, 0, sizeof(int) * maze_rows * maze_cols);
+
+	for(row=0; row<MAZE_ROW; row++){
+		for(col=0; col<MAZE_COL; col++){
+			Node *node = (Node *)maze + row*MAZE_COL + col;
+			if(node->visited == TRUE){
+				maze_map
+			}
+		}
+	}
 }
 
 void print_maze(Node **maze, int MAZE_ROW, int MAZE_COL){
