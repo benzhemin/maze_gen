@@ -7,8 +7,8 @@
 #include "linerseq.h"
 #include "display.h"
 
-#define MAZE_ROW 10	
-#define MAZE_COL 10
+#define MAZE_ROW 2
+#define MAZE_COL 2
 
 void init_maze(Node (*maze)[MAZE_COL]){
 	int row,col;
@@ -122,6 +122,7 @@ void depth_first_gen(Node (*maze)[MAZE_COL]){
 		if(has_unvisited_neighbour(maze, cur, &neighbours)){	
 			Node nei_node;
 			random_neighbour(&neighbours, &nei_node);
+			remove_wall(maze, cur, &nei_node);
 
 			cur->visited = TRUE;
 			push(&s, cur);
@@ -131,7 +132,7 @@ void depth_first_gen(Node (*maze)[MAZE_COL]){
             
 			print_maze((Node **)maze, MAZE_ROW, MAZE_COL);
 
-			sleep(1);
+			sleep(2);
 
 		}else if(!stack_empty(&s)){
 			pop(&s, cur);
