@@ -59,7 +59,9 @@ void print_maze_trans(Node *maze, int maze_rows, int maze_cols){
     int row, col;
     for(row=0; row<maze_rows; row++){
         for(col=0; col<maze_cols; col++){
-            printf("%d ", (maze+row*maze_cols+col)->visited);
+            Node *n = maze+row*maze_cols+col;
+            printf("%d ", (*n).visited);
+            fflush(stdout);
         }
         printf("\n");
     }
