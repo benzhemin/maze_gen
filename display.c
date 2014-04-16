@@ -45,78 +45,77 @@ void destory_screen(){
 	endwin();
 }
 
-/*
-void print_maze(Node (*maze)[MAZE_COL]){
+void print_maze_gen(Node *maze, int maze_rows, int maze_cols){
 	int row, col;
-	for(row=0; row<MAZE_ROW; row++){
-		for(col=0; col<MAZE_COL; col++){
-			printf("%d ", maze[row][col].visited);
-		}
-		printf("\n");
-	}
-    printf("\n");
-}
-*/
-
-void print_maze_gen(Node **maze, int MAZE_ROW, int MAZE_COL){
-	int row, col;
-	for(row=0; row<MAZE_ROW; row++){
-		for(col=0; col<MAZE_COL; col++){
-			mvwprintw(maze_gen_wptr, row, col*2, "%d ", (*((Node *)maze + row*MAZE_COL + col)).visited);
+	for(row=0; row<maze_rows; row++){
+		for(col=0; col<maze_cols; col++){
+			mvwprintw(maze_gen_wptr, row, col*2, "%d ", (maze + row*maze_cols + col)->visited);
 		}
 	}
 	wrefresh(maze_gen_wptr);
 }
 
-void print_maze_map(Node **maze, int MAZE_ROW, int MAZE_COL){
-	int row, col;
-	int maze_rows = MAZE_ROW*2;
-	int maze_cols = MAZE_COL*2;
-	int maze_size = maze_rows * maze_cols;
-	int *maze_map = (int *)malloc(sizeof(int) * maze_size);
-	memset(maze_map, 0, sizeof(int) * maze_size);
+void print_maze_trans(Node *maze, int maze_rows, int maze_cols){
+    int row, col;
+    for(row=0; row<maze_rows; row++){
+        for(col=0; col<maze_cols; col++){
+            printf("%d ", (maze+row*maze_cols+col)->visited);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
 
-	for(row=0; row<MAZE_ROW; row++){
-		for(col=0; col<MAZE_COL; col++){
-			Node *node = (Node *)maze + row*MAZE_COL + col;
-			if(node->visited == TRUE){
-				*(maze_map + (row*2)*maze_cols + col*2) = 1;
-			}
-
-			switch(node->di){
-				case Di_None:
-					break;
-				case Di_East:
-					*(maze_map + (row*2)*maze_cols + col*2+1) = 1;
-					break;
-				case Di_Sorth:
-					if (((row*2+1)*maze_cols + col*2) < maze_size){
-						*(maze_map + (row+1)*maze_cols + col*2) = 1;	
-					}
-					break;
-				case Di_North:
-					if((row*2-1) >= 0){
-						*(maze_map + (row*2-1)*maze_cols + col*2) = 1;		
-					}
-					break;
-				case Di_West:
-					*(maze_map + (row*2)*maze_cols + col*2-1) = 1;
-					break;
-				default:
-					assert(FALSE);
-			}
-		}
-	}
-
+void print_maze_map(Node *maze, int maze_rows, int maze_cols){
+    int TRANS_ROW = maze_rows*2+1;
+    int TRANS_COL = maze_cols*2+1;
+    
+    int *maze_map = malloc(sizeof(int) *  TRANS_ROW*TRANS_COL);
+    memset(maze_map, 0, sizeof(int) * TRANS_ROW*TRANS_COL);
+    
+    int row, col;
+    for (row=0; row<maze_rows; row++) {
+        for (col=0; col<maze_cols; col++) {
+            printf("%d ", (maze+row*maze_cols+col)->visited);
+        }
+        printf("\n");
+    }
+    printf("\n");
+    
+    /*
+    for (row=0; row<MAZE_ROW; row++) {
+        for (col=0; col<MAZE_COL; col++) {
+            Node *pn = maze + row*MAZE_COL + col;
+            
+            if (pn->visited == TRUE) {
+                int trans_per_row = MAZE_COL*2+1;
+                int trans_row = row * 2 + 1;
+                int trans_col = col * 2 + 1;
+                
+                *(maze_map + trans_row*trans_per_row + trans_col) = TRUE;
+            }
+        }
+    }
+    
+    for (row=0; row<TRANS_ROW; row++) {
+        for (col=0; col<TRANS_COL; col++) {
+            printf("%d ", *(maze_map + row*TRANS_COL + col));
+        }
+        printf("\n");
+    }
+    printf("\n");
+     
+	/*
 	for(row=0; row<maze_rows; row++){
 		for(col=0; col<maze_cols; col++){
 			mvwprintw(maze_map_wptr, row, col*2, "%d ", *(maze_map+row*MAZE_COL+col));
 		}
 	}
 	wrefresh(maze_map_wptr);
+	*/
 }
 
-void print_maze(Node **maze, int MAZE_ROW, int MAZE_COL){
-	print_maze_gen(maze, MAZE_ROW, MAZE_COL);
+void print_maze(Node *maze, int MAZE_ROW, int MAZE_COL){
+	//print_maze_gen(maze, MAZE_ROW, MAZE_COL);
 	print_maze_map(maze, MAZE_ROW, MAZE_COL);
 }

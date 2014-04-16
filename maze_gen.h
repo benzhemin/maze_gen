@@ -4,21 +4,21 @@
 #include "predef.h"
 
 typedef struct{
-	int x;
-	int y;
+	int row_pos;
+	int col_pos;
 }Point;
 
 typedef enum{
-	Di_None = 0,
-	Di_East,
+	Di_East = 0,
 	Di_Sorth,
 	Di_North,
 	Di_West,
+    Di_LEN
 }Direct;
 
 typedef struct {
 	Point point;
-	Direct di;
+	bool di[Di_LEN];
 	bool visited;
 }Node;
 
