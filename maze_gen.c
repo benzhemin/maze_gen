@@ -142,7 +142,7 @@ void depth_first_gen(Maze *maze){
             
             cur = maze->nodes+nei_node.point.row_pos*maze->maze_cols+nei_node.point.col_pos;
             cur->visited = TRUE;
-			sleep(1);
+			usleep(100*1000);
             
             print_maze(maze);
             
@@ -185,6 +185,8 @@ int main(int argc, char *argv[]){
 
     scanf("%d", &maze_rows);
     
+    destory_maze(&maze);
+
 	destory_screen();
 
 	return 0;

@@ -43,8 +43,6 @@ void destory_screen(){
 	delwin(maze_gen_wptr);
 	delwin(maze_map_wptr);
 
-	touchwin(stdscr);
-	refresh();
 	endwin();
 }
 
@@ -155,7 +153,7 @@ void print_maze_map(Maze *maze){
 	for(row=0; row<TRANS_ROW; row++){
 		for(col=0; col<TRANS_COL; col++){
             if (*(maze_map + row*TRANS_COL + col) != 0) {
-                mvwprintw(maze_map_wptr, row, col*2, "%d ", *(maze_map + row*TRANS_COL + col));
+                mvwprintw(maze_map_wptr, row, col*2, "%d ", *(maze_map + row*TRANS_COL + col)-1 /*'*'*/);
             }
 		}
 	}
