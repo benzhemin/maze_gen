@@ -36,6 +36,18 @@ void init_screen(int maze_rows, int maze_cols){
 	maze_map_wptr = newwin(trans_row, trans_col, 5, start_map_x);
 	assert(maze_map_wptr != NULL);
 	wrefresh(maze_map_wptr);
+
+	if (!has_colors()){
+		endwin();
+		exit(1);
+	}
+	if (start_color() != OK){
+		endwin();
+		exit(0);
+	}
+	init_pair(1, COLOR_WHITE, COLOR_GREEN);
+	init_pair(2, COLOR_WHITE, COLOR_WHITE);
+	wattron(maze_map_wptr, COLOR_PAIR(1));
 }
 
 
@@ -153,11 +165,19 @@ void print_maze_map(Maze *maze){
 	for(row=0; row<TRANS_ROW; row++){
 		for(col=0; col<TRANS_COL; col++){
             if (*(maze_map + row*TRANS_COL + col) != 0) {
-                mvwprintw(maze_map_wptr, row, col*2, "%d ", *(maze_map + row*TRANS_COL + col)-1 /*'*'*/);
+                mvwprintw(maze_map_wptr, row, col*2, "  "/*, *(maze_map + row*TRANS_COL + col)-1 /*'*'*/);
             }
 		}
 	}
 	wrefresh(maze_map_wptr);
+	
+	wattron(maze_map_wptr, COLOR_PAIR(2));
+	mvwprintw(maze_map_wptr, 1, 2, "  ");
+	mvwprintw(maze_map_wptr, TRANS_ROW-2, TRANS_COL*2-4, "  ");
+	wattron(maze_map_wptr, COLOR_PAIR(1));
+	wrefresh(maze_map_wptr);
+
+	free(maze_map);
 }
 
 void print_maze(Maze *maze){
