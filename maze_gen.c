@@ -8,14 +8,15 @@
 #include "linerseq.h"
 #include "display.h"
 
-#define MAZE_ROW 2
-#define MAZE_COL 3
-
-void init_maze(Node (*maze)[MAZE_COL]){
+void init_maze(Maze *maze, int maze_rows, int maze_cols){
+    maze->nodes = (Node *)malloc(sizeof(Node) * maze_rows *maze_cols);
+    maze->maze_rows = maze_rows;
+    maze->maze_cols = maze_cols;
+    
 	int row,col;
-	for(row=0; row<MAZE_ROW; row++){
-		for(col=0; col<MAZE_COL; col++){
-			Node *node = &maze[row][col];
+	for(row=0; row<maze_rows; row++){
+		for(col=0; col<maze_cols; col++){
+			Node *node = maze->nodes + row*maze_cols + col;
 			node->point.col_pos = col;
 			node->point.row_pos = row;
 			for (int i=0; i<Di_LEN; i++) {
@@ -26,27 +27,28 @@ void init_maze(Node (*maze)[MAZE_COL]){
 	}
 }
 
-bool has_unvisited_node(Node (*maze)[MAZE_COL]){
+bool has_unvisited_node(Maze *maze){
 	int row, col;
-	for(row=0; row<MAZE_ROW; row++){
-		for(col=0; col<MAZE_COL; col++){
-			if(maze[row][col].visited == FALSE){
-				return TRUE;
-			}
-		}
+	for(row=0; row<maze->maze_rows; row++){
+		for(col=0; col<maze->maze_cols; col++){
+            Node *pn = maze->nodes + row*maze->maze_cols + col;
+            if (pn->visited == FALSE) {
+                return TRUE;
+            }
+        }
 	}
 
 	return FALSE;
 }
 
-bool is_inbounds(Point p){
-	if((p.col_pos>=0 && p.col_pos< MAZE_COL) && (p.row_pos>=0 && p.row_pos< MAZE_ROW)){
+bool is_inbounds(Maze *maze, Point p){
+	if((p.col_pos>=0 && p.col_pos< maze->maze_cols) && (p.row_pos>=0 && p.row_pos< maze->maze_rows)){
 		return TRUE;
 	}
 	return FALSE;
 }
 
-bool has_unvisited_neighbour(Node (*maze)[MAZE_COL], Node *p, SqList *L){
+bool has_unvisited_neighbour(Maze *maze, Node *p, SqList *L){
 	bool has_neighbour = FALSE;
 	Direct di;
 	for(di=Di_East; di<=Di_West; di++){
@@ -72,7 +74,8 @@ bool has_unvisited_neighbour(Node (*maze)[MAZE_COL], Node *p, SqList *L){
 				break;
 		}
 
-		if(is_inbounds(cur) && maze[cur.row_pos][cur.col_pos].visited==FALSE){
+        Node *pn = maze->nodes + cur.row_pos*maze->maze_cols + cur.col_pos;
+		if(is_inbounds(maze, cur) && pn->visited==FALSE){
 			Node n;
 			n.point = cur;
 			n.di[di] = TRUE;
@@ -94,17 +97,17 @@ void random_neighbour(SqList *L, Node *pn){
 	elem_at_index(L, randnum, pn);
 }
 
-void remove_wall(Node (*maze)[MAZE_COL], Node *cur, Node *next){
+void remove_wall(Maze *maze, Node *cur, Node *next){
 	int x_offset = next->point.col_pos - cur->point.col_pos;
 	int y_offset = next->point.row_pos - cur->point.row_pos;
-
+    
 	Direct di = -1;
 	if (x_offset == 1){
 		di = Di_East;
 	}else if (x_offset == -1){
 		di = Di_West;
 	}
-
+    
 	if(y_offset == 1){
 		di = Di_Sorth;
 	}else if (y_offset == -1){
@@ -113,27 +116,16 @@ void remove_wall(Node (*maze)[MAZE_COL], Node *cur, Node *next){
     assert(di >= 0);
     
 	Point curp = cur->point;
-	maze[curp.row_pos][curp.col_pos].di[di] = TRUE;
+	Node *np = maze->nodes + curp.row_pos*maze->maze_cols + curp.col_pos;
+    np->di[di] = TRUE;
 }
 
-
-void print_maze_origin(Node (*maze)[MAZE_COL]){
-    int row, col;
-    for(row=0; row<MAZE_ROW; row++){
-        for(col=0; col<MAZE_COL; col++){
-            printf("%d ", maze[row][col].visited);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-void depth_first_gen(Node (*maze)[MAZE_COL]){
+void depth_first_gen(Maze *maze){
 	Node *cur;
 	SqStack s;
 	init_stack(&s, sizeof(Node *));
 
-	cur = maze[0];
+	cur = maze->nodes;
 	while(has_unvisited_node(maze)){
 		SqList neighbours;
 		init_linerseq(&neighbours, sizeof(Node));
@@ -148,14 +140,12 @@ void depth_first_gen(Node (*maze)[MAZE_COL]){
 
 			push(&s, cur);
             
-            print_maze_origin(maze);
-            print_maze_trans(maze[0], MAZE_ROW, MAZE_COL);
-			//print_maze(maze[0], MAZE_ROW, MAZE_COL);
-
-			cur = &maze[nei_node.point.row_pos][nei_node.point.col_pos];
-            //cur->visited = TRUE;
-			//sleep(1);
-
+            cur = maze->nodes+nei_node.point.row_pos*maze->maze_cols+nei_node.point.col_pos;
+            cur->visited = TRUE;
+			sleep(1);
+            
+            print_maze(maze);
+            
 		}else if(!stack_empty(&s)){
 			pop(&s, cur);
 
@@ -166,20 +156,36 @@ void depth_first_gen(Node (*maze)[MAZE_COL]){
 
 		destory_linerseq(&neighbours);
 	}
+    
+    print_maze(maze);
 
 	destory_stack(&s);
 }
 
-int main(void){
-	Node maze[MAZE_ROW][MAZE_COL];
+void destory_maze(Maze *maze){
+    free(maze->nodes);
+}
 
-	//init_screen(MAZE_ROW, MAZE_COL);
-
-	init_maze(maze);
+int main(int argc, char *argv[]){
+    int maze_rows, maze_cols;
+    if (argc != 3) {
+        perror("maze size must be specified!");
+        exit(EXIT_FAILURE);
+    }
+    
+    maze_rows = atoi(argv[1]);
+    maze_cols = atoi(argv[2]);
+    
+    Maze maze;
+    init_screen(maze_rows, maze_cols);
+    
+    init_maze(&maze, maze_rows, maze_cols);
 	
-	depth_first_gen(maze);
+	depth_first_gen(&maze);
 
-	//destory_screen();
+    scanf("%d", &maze_rows);
+    
+	destory_screen();
 
 	return 0;
 }

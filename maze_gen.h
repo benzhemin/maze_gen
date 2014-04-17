@@ -18,9 +18,15 @@ typedef enum{
 
 typedef struct {
 	Point point;
-	bool di[Di_LEN];
-	bool visited;
+	int di[Di_LEN];
+	int visited;
 }Node;
+
+typedef struct{
+    Node *nodes;
+    int maze_rows;
+    int maze_cols;
+} Maze;
 
 
 #endif
