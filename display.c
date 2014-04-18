@@ -58,28 +58,14 @@ void destory_screen(){
 	endwin();
 }
 
-void print_maze_gen(Node *maze, int maze_rows, int maze_cols){
-	int row, col;
-	for(row=0; row<maze_rows; row++){
-		for(col=0; col<maze_cols; col++){
-			mvwprintw(maze_gen_wptr, row, col*2, "%d ", (maze + row*maze_cols + col)->visited);
-		}
-	}
-	wrefresh(maze_gen_wptr);
-}
- 
- 
-void print_maze_trans(Maze *maze){
+void print_maze_gen(Maze *maze){
     int row, col;
-    for(row=0; row<maze->maze_rows; row++){
-        for(col=0; col<maze->maze_cols; col++){
-            Node *np = maze->nodes + row*maze->maze_cols + col;
-            printf("%d ", np->visited);
-            fflush(stdout);
+	for (row=0; row<maze->maze_rows; row++) {
+        for (col=0; col<maze->maze_cols; col++) {
+            mvwprintw(maze_gen_wptr, row, col*2, "%d ", (maze->nodes+row*maze->maze_cols+col)->visited);
         }
-        printf("\n");
     }
-    printf("\n");
+    wrefresh(maze_gen_wptr);
 }
 
 void print_maze_map(Maze *maze){
@@ -91,17 +77,6 @@ void print_maze_map(Maze *maze){
     
     
     int row, col;
-    /*
-    for (row=0; row<maze->maze_rows; row++) {
-        for (col=0; col<maze->maze_cols; col++) {
-            Node *np = maze->nodes+row*maze->maze_cols+col;
-            printf("%d ", np->visited);
-        }
-        printf("\n");
-    }
-    printf("\n");
-    */
-     
     for (row=0; row<maze->maze_rows; row++) {
         for (col=0; col<maze->maze_cols; col++) {
             Node *np = maze->nodes+row*maze->maze_cols+col;
@@ -144,33 +119,16 @@ void print_maze_map(Maze *maze){
         }
     }
     
-    /*
-    for (row=0; row<TRANS_ROW; row++) {
-        for (col=0; col<TRANS_COL; col++) {
-            printf("%d ", *(maze_map + row*TRANS_COL + col));
-        }
-        printf("\n");
-    }
-    printf("\n");
-    */
-	
-    for (row=0; row<maze->maze_rows; row++) {
-        for (col=0; col<maze->maze_cols; col++) {
-            mvwprintw(maze_gen_wptr, row, col*2, "%d ", (maze->nodes+row*maze->maze_cols+col)->visited);
-        }
-    }
-    wrefresh(maze_gen_wptr);
-    
-    
 	for(row=0; row<TRANS_ROW; row++){
 		for(col=0; col<TRANS_COL; col++){
             if (*(maze_map + row*TRANS_COL + col) != 0) {
-                mvwprintw(maze_map_wptr, row, col*2, "  "/*, *(maze_map + row*TRANS_COL + col)-1 /*'*'*/);
+                mvwprintw(maze_map_wptr, row, col*2, "  "/*, *(maze_map + row*TRANS_COL + col)-1 *//*'*'*/);
             }
 		}
 	}
 	wrefresh(maze_map_wptr);
-	
+
+
 	wattron(maze_map_wptr, COLOR_PAIR(2));
 	mvwprintw(maze_map_wptr, 1, 2, "  ");
 	mvwprintw(maze_map_wptr, TRANS_ROW-2, TRANS_COL*2-4, "  ");
@@ -181,6 +139,6 @@ void print_maze_map(Maze *maze){
 }
 
 void print_maze(Maze *maze){
-	//print_maze_gen(maze, MAZE_ROW, MAZE_COL);
+	print_maze_gen(maze);
 	print_maze_map(maze);
 }

@@ -52,10 +52,8 @@ bool has_unvisited_neighbour(Maze *maze, Node *p, SqList *L){
 	bool has_neighbour = FALSE;
 	Direct di;
 	for(di=Di_East; di<=Di_West; di++){
-		Point cur;
-        cur.row_pos = p->point.row_pos;
-        cur.col_pos = p->point.col_pos;
-
+		Point cur = p->point;
+        
 		switch(di){
 			case Di_East:
 				cur.col_pos++;
@@ -121,11 +119,10 @@ void remove_wall(Maze *maze, Node *cur, Node *next){
 }
 
 void depth_first_gen(Maze *maze){
-	Node *cur;
 	SqStack s;
 	init_stack(&s, sizeof(Node *));
 
-	cur = maze->nodes;
+	Node *cur = maze->nodes;
 	while(has_unvisited_node(maze)){
 		SqList neighbours;
 		init_linerseq(&neighbours, sizeof(Node));
@@ -134,15 +131,15 @@ void depth_first_gen(Maze *maze){
 			
 			cur->visited = TRUE;
             
-            Node nei_node;
-            random_neighbour(&neighbours, &nei_node);
-			remove_wall(maze, cur, &nei_node);
+            Node nb_node;
+            random_neighbour(&neighbours, &nb_node);
+			remove_wall(maze, cur, &nb_node);
 
 			push(&s, cur);
             
-            cur = maze->nodes+nei_node.point.row_pos*maze->maze_cols+nei_node.point.col_pos;
+            cur = maze->nodes+nb_node.point.row_pos*maze->maze_cols+nb_node.point.col_pos;
             cur->visited = TRUE;
-			usleep(100*1000);
+			usleep(20*1000);
             
             print_maze(maze);
             
