@@ -250,7 +250,7 @@ void randomize_maze(Maze *maze, TransMaze **ptrans_maze){
             
             elem_at_index(&points_list, randnum, &p);
             
-            *(trans_maze->maze_unit+p.row_pos*TRANS_COLS+p.col_pos) = 1;
+            *(trans_maze->maze_unit+p.row_pos*TRANS_COLS+p.col_pos) = 1;	
         }
         
         destory_linerseq(&points_list);
@@ -274,7 +274,7 @@ void randomize_maze(Maze *maze, TransMaze **ptrans_maze){
             
             elem_at_index(&points_list, randnum, &p);
             
-            *(trans_maze->maze_unit+p.row_pos*TRANS_COLS+p.col_pos) = 1;
+            *(trans_maze->maze_unit+p.row_pos*TRANS_COLS+p.col_pos) = 1;	
         }
         
         destory_linerseq(&points_list);
