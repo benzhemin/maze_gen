@@ -27,12 +27,22 @@ void init_maze(Maze *maze, int maze_rows, int maze_cols){
 	}
 }
 
-bool has_unvisited_node(Maze *maze){
+void destory_maze(Maze *maze){
+    free(maze->nodes);
+}
+
+void destory_trans_maze(TransMaze *trans_maze){
+    free(trans_maze->maze_unit);
+    free(trans_maze);
+}
+
+bool has_unvisited_node(Maze *maze, Node **punvisited){
 	int row, col;
 	for(row=0; row<maze->maze_rows; row++){
 		for(col=0; col<maze->maze_cols; col++){
             Node *pn = maze->nodes + row*maze->maze_cols + col;
             if (pn->visited == FALSE) {
+            	*punvisited = pn;
                 return TRUE;
             }
         }
@@ -118,12 +128,15 @@ void remove_wall(Maze *maze, Node *cur, Node *next){
     np->di[di] = TRUE;
 }
 
+#define SLEEP_INTERNAL (50*1000)
+
 void depth_first_gen(Maze *maze){
 	SqStack s;
 	init_stack(&s, sizeof(Node *));
 
 	Node *cur = maze->nodes;
-	while(has_unvisited_node(maze)){
+	Node *unvisited = NULL;
+	while(has_unvisited_node(maze, &unvisited)){
 		SqList neighbours;
 		init_linerseq(&neighbours, sizeof(Node));
 
@@ -138,17 +151,20 @@ void depth_first_gen(Maze *maze){
 			push(&s, cur);
             
             cur = maze->nodes+nb_node.point.row_pos*maze->maze_cols+nb_node.point.col_pos;
-            cur->visited = TRUE;
-			usleep(20*1000);
-            
+
             print_maze(maze);
-            
+
+            usleep(SLEEP_INTERNAL);
+
 		}else if(!stack_empty(&s)){
+			cur->visited = TRUE;
 			pop(&s, cur);
 
 		}else{
-			//pick a node as cur, and mark as visited
-			break;
+			cur = unvisited;
+			cur->visited = TRUE;
+			print_maze(maze);
+			usleep(SLEEP_INTERNAL);
 		}
 
 		destory_linerseq(&neighbours);
@@ -159,29 +175,140 @@ void depth_first_gen(Maze *maze){
 	destory_stack(&s);
 }
 
-void destory_maze(Maze *maze){
-    free(maze->nodes);
+bool can_place_maze_row(TransMaze *trans_maze, int row, int col){
+    int TRANS_COL = trans_maze->trans_cols;
+    
+    if (*(trans_maze->maze_unit+(row-1)*TRANS_COL+col)==1 && *(trans_maze->maze_unit+(row+1)*TRANS_COL+col)==1 &&
+        *(trans_maze->maze_unit+row*TRANS_COL+col-1)==0 && *(trans_maze->maze_unit+row*TRANS_COL+col+1)==0) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+bool can_place_maze_col(TransMaze *trans_maze, int row, int col){
+    int TRANS_COL = trans_maze->trans_cols;
+    
+    if (*(trans_maze->maze_unit+row*TRANS_COL+col-1)==1 && *(trans_maze->maze_unit+row*TRANS_COL+col+1)==1 &&
+        *(trans_maze->maze_unit+(row-1)*TRANS_COL+col)==0 && *(trans_maze->maze_unit+(row+1)*TRANS_COL+col)==0) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void print_tm(TransMaze *trans_maze){
+    int row, col;
+    for (row=0; row<trans_maze->trans_rows; row++) {
+        for (col=0; col<trans_maze->trans_cols; col++) {
+            printf("%d", *(trans_maze->maze_unit+row*trans_maze->trans_cols+col));
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+void write_trans_maze(TransMaze *trans_maze, char *file_name){
+	FILE *fd = fopen(file_name, "w+");
+	
+	int row, col;
+    for (row=0; row<trans_maze->trans_rows; row++) {
+        for (col=0; col<trans_maze->trans_cols; col++) {
+            fprintf(fd, "%d ", *(trans_maze->maze_unit+row*trans_maze->trans_cols+col));
+        }
+        fprintf(fd, "\n");
+    }
+    fprintf(fd, "\n");
+
+    fclose(fd);
+}
+
+void randomize_maze(Maze *maze, TransMaze **ptrans_maze){
+    TransMaze *trans_maze = malloc(sizeof(TransMaze));
+    transform_maze(maze, trans_maze);
+    *ptrans_maze = trans_maze;
+    
+    //print_tm(trans_maze);
+    
+    SqList points_list;
+    int TRANS_ROWS = trans_maze->trans_rows;
+    int TRANS_COLS = trans_maze->trans_cols;
+    int row, col;
+    for (row=1; row<TRANS_ROWS-1; row++) {
+        init_linerseq(&points_list, sizeof(Point));
+        for (col=0; col<TRANS_COLS; col++) {
+            if (*(trans_maze->maze_unit+row*TRANS_COLS+col) == 0){
+                if (can_place_maze_row(trans_maze, row, col)) {
+                    Point p = {row, col};
+                    insert_inerseq_tail(&points_list, &p);
+                }
+            }
+        }
+        
+        if (points_list.length > 0) {
+            Point p;
+            srand((unsigned)clock());
+            int randnum = rand() % points_list.length;
+            
+            elem_at_index(&points_list, randnum, &p);
+            
+            *(trans_maze->maze_unit+p.row_pos*TRANS_COLS+p.col_pos) = 1;
+        }
+        
+        destory_linerseq(&points_list);
+    }
+    
+    for(col=1; col<TRANS_COLS-1; col++){
+        init_linerseq(&points_list, sizeof(Point));
+        for (row=0; row<TRANS_ROWS; row++) {
+            if (*(trans_maze->maze_unit+row*TRANS_COLS+col) == 0){
+                if (can_place_maze_col(trans_maze, row, col)) {
+                    Point p = {row, col};
+                    insert_inerseq_tail(&points_list, &p);
+                }
+            }
+        }
+        
+        if (points_list.length > 0) {
+            Point p;
+            srand((unsigned)clock());
+            int randnum = rand() % points_list.length;
+            
+            elem_at_index(&points_list, randnum, &p);
+            
+            *(trans_maze->maze_unit+p.row_pos*TRANS_COLS+p.col_pos) = 1;
+        }
+        
+        destory_linerseq(&points_list);
+    }
+    
+    print_trans_maze(trans_maze);
 }
 
 int main(int argc, char *argv[]){
     int maze_rows, maze_cols;
-    if (argc != 3) {
-        perror("maze size must be specified!");
+    char *file_name;
+    if (argc != 4) {
+        perror("maze size and file name must be specified!");
         exit(EXIT_FAILURE);
     }
     
     maze_rows = atoi(argv[1]);
     maze_cols = atoi(argv[2]);
+    file_name = argv[3];
     
     Maze maze;
+    TransMaze *trans_maze;
     init_screen(maze_rows, maze_cols);
     
     init_maze(&maze, maze_rows, maze_cols);
 	
 	depth_first_gen(&maze);
+    
+    randomize_maze(&maze, &trans_maze);
 
+    write_trans_maze(trans_maze, file_name);
     scanf("%d", &maze_rows);
     
+    destory_trans_maze(trans_maze);
     destory_maze(&maze);
 
 	destory_screen();

@@ -58,23 +58,16 @@ void destory_screen(){
 	endwin();
 }
 
-void print_maze_gen(Maze *maze){
-    int row, col;
-	for (row=0; row<maze->maze_rows; row++) {
-        for (col=0; col<maze->maze_cols; col++) {
-            mvwprintw(maze_gen_wptr, row, col*2, "%d ", (maze->nodes+row*maze->maze_cols+col)->visited);
-        }
-    }
-    wrefresh(maze_gen_wptr);
-}
-
-void print_maze_map(Maze *maze){
-    int TRANS_ROW = maze->maze_rows*2+1;
+void transform_maze(Maze *maze, TransMaze *trans_maze){
+	int TRANS_ROW = maze->maze_rows*2+1;
     int TRANS_COL = maze->maze_cols*2+1;
     
     int *maze_map = malloc(sizeof(int) *  TRANS_ROW*TRANS_COL);
     memset(maze_map, 0, sizeof(int) * TRANS_ROW*TRANS_COL);
     
+    trans_maze->trans_rows = TRANS_ROW;
+    trans_maze->trans_cols = TRANS_COL;
+    trans_maze->maze_unit = maze_map;
     
     int row, col;
     for (row=0; row<maze->maze_rows; row++) {
@@ -118,24 +111,47 @@ void print_maze_map(Maze *maze){
             }
         }
     }
-    
+}
+
+void print_maze_gen(Maze *maze){
+    int row, col;
+	for (row=0; row<maze->maze_rows; row++) {
+        for (col=0; col<maze->maze_cols; col++) {
+            mvwprintw(maze_gen_wptr, row, col*2, "%d ", (maze->nodes+row*maze->maze_cols+col)->visited);
+        }
+    }
+    wrefresh(maze_gen_wptr);
+}
+
+void print_trans_maze(TransMaze *maze_map){
+    int TRANS_ROW = maze_map->trans_rows;
+    int TRANS_COL = maze_map->trans_cols;
+	int row, col;
 	for(row=0; row<TRANS_ROW; row++){
 		for(col=0; col<TRANS_COL; col++){
-            if (*(maze_map + row*TRANS_COL + col) != 0) {
+            if (*(maze_map->maze_unit + row*TRANS_COL + col) != 0) {
                 mvwprintw(maze_map_wptr, row, col*2, "  "/*, *(maze_map + row*TRANS_COL + col)-1 *//*'*'*/);
             }
 		}
 	}
 	wrefresh(maze_map_wptr);
-
-
+    
+    
 	wattron(maze_map_wptr, COLOR_PAIR(2));
 	mvwprintw(maze_map_wptr, 1, 2, "  ");
 	mvwprintw(maze_map_wptr, TRANS_ROW-2, TRANS_COL*2-4, "  ");
 	wattron(maze_map_wptr, COLOR_PAIR(1));
 	wrefresh(maze_map_wptr);
+}
 
-	free(maze_map);
+void print_maze_map(Maze *maze){
+	TransMaze maze_map;
+	
+    transform_maze(maze, &maze_map);
+
+    print_trans_maze(&maze_map);
+
+	free(maze_map.maze_unit);
 }
 
 void print_maze(Maze *maze){

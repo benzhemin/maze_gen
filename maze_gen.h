@@ -28,5 +28,11 @@ typedef struct{
     int maze_cols;
 } Maze;
 
+typedef struct{
+	int *maze_unit;
+	int trans_rows;
+	int trans_cols;
+} TransMaze;
+
 
 #endif
